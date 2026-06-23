@@ -8,6 +8,7 @@
 #include <gui/modules/popup.h>
 #include <storage/storage.h>
 #include <notification/notification_messages.h>
+#include "parse.h"
 
 #define APP_NAME            "OctoPrint Monitor"
 #define CONFIG_DIR          EXT_PATH("apps_data/octoprint_monitor")
@@ -35,8 +36,9 @@ typedef enum {
 
 /* View IDs */
 typedef enum {
-    ViewMain = 0,
-    ViewError,
+    ViewStatus = 0, /* canvas status display — normal operation */
+    ViewText,       /* text box for config-missing error        */
+    ViewError,      /* popup for runtime errors                 */
 } AppView;
 
 /* App state */
@@ -44,7 +46,8 @@ typedef struct {
     /* GUI */
     Gui*            gui;
     ViewDispatcher* view_dispatcher;
-    TextBox*        text_box_main;
+    View*           status_view;   /* formatted printer status canvas */
+    TextBox*        text_box_main; /* config-missing error text       */
     Popup*          popup_error;
 
     /* Config */
@@ -56,6 +59,7 @@ typedef struct {
     FuriThread*       worker_thread;
     bool              worker_running;
 
-    /* Result */
-    FuriString* result_text;
+    /* Data */
+    PrinterStatus status;
+    char          error_text[128];
 } OctoPrintApp;
